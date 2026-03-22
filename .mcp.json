@@ -4,10 +4,7 @@
       "command": "npx",
       "args": ["-y", "@launchpath-ai/mcp-server"],
       "env": {
-        "LAUNCHPATH_API_KEY": {
-          "description": "Your LaunchPath API key. Get it from Settings → API Keys in the LaunchPath dashboard (https://www.trylaunchpath.com/dashboard/settings).",
-          "required": true
-        }
+        "LAUNCHPATH_API_KEY": "${LAUNCHPATH_API_KEY}"
       }
     }
   }
