@@ -28,29 +28,29 @@ Full access to the LaunchPath platform:
 
 ### Skills (slash commands)
 
-| Command | Description |
+| Command | What it does |
 |---------|-------------|
-| `/launchpath:deploy-agent` | End-to-end: create agent → train → deploy |
-| `/launchpath:setup-client` | Create client account and link an agent |
-| `/launchpath:agent-report` | Summary report of all agents and what needs attention |
-| `/launchpath:whatsapp-campaign` | Set up WhatsApp templates, contacts, and campaigns |
+| `/launchpath:goal-tracker` | Track how many conversations actually converted — shows a conversion funnel with where and why people dropped off |
+| `/launchpath:audit-agent` | Diagnose why an agent is underperforming — checks prompt, tools, knowledge, conversations, and channels |
+| `/launchpath:agent-report` | Executive dashboard across all agents — performance, costs, deployments, and what needs attention |
+| `/launchpath:stress-test` | Run targeted tests before deploying — edge cases, tool failures, prompt injection, knowledge boundaries |
 
-Plus an internal guide that helps Claude understand how to use LaunchPath tools effectively.
+All skills are **manual-only** — they only run when you type the command. They never auto-trigger (some cost credits or perform heavy analysis).
 
 ## Quick start
 
 ```
-# Deploy an agent for a business
-/launchpath:deploy-agent https://example.com
+# See how many people actually booked/converted
+/launchpath:goal-tracker Dental Assistant
 
-# Set up a new client
-/launchpath:setup-client Acme Corp
+# Find out what's wrong with an agent
+/launchpath:audit-agent Demo Support Agent
 
-# Check how your agents are doing
+# Get the overview of everything
 /launchpath:agent-report
 
-# Launch a WhatsApp campaign
-/launchpath:whatsapp-campaign Spring promotion
+# Test before going live
+/launchpath:stress-test Booking Assistant
 ```
 
 ## Requirements
