@@ -4,17 +4,11 @@ Create, train, deploy, and manage AI agents for businesses entirely from Claude 
 
 ## Installation
 
-### Option 1: Plugin marketplace (recommended)
+### From the terminal
 
-```
-/plugin marketplace add launchpath/claude-plugin
-/plugin install launchpath
-```
-
-### Option 2: Direct from GitHub
-
-```
-/plugin install https://github.com/launchpath/claude-plugin.git
+```bash
+claude plugin marketplace add launchpath-ai/claude-plugin
+claude plugin install launchpath@launchpath-ai
 ```
 
 You'll be prompted for your LaunchPath API key. Get it from [Settings → API Keys](https://www.trylaunchpath.com/dashboard/settings) in the LaunchPath dashboard.
