@@ -30,7 +30,7 @@ Full access to the LaunchPath platform:
 
 | Command | What it does |
 |---------|-------------|
-| `/launchpath:goal-tracker` | Track how many conversations actually converted — shows a conversion funnel with where and why people dropped off |
+| `/launchpath:goal-tracker` | Track conversions across channels — which conversations booked, which leads hit your CRM, which WhatsApp contacts converted. Smart action classification so only real outcomes count |
 | `/launchpath:audit-agent` | Diagnose why an agent is underperforming — checks prompt, tools, knowledge, conversations, and channels |
 | `/launchpath:agent-report` | Executive dashboard across all agents — performance, costs, deployments, and what needs attention |
 | `/launchpath:stress-test` | Run targeted tests before deploying — edge cases, tool failures, prompt injection, knowledge boundaries |
