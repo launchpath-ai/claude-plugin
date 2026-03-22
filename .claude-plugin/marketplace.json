@@ -1,0 +1,17 @@
+{
+  "name": "launchpath-ai",
+  "description": "LaunchPath — AI agent deployment platform. Create, train, deploy, and manage AI agents for businesses from Claude Code.",
+  "owner": {
+    "name": "LaunchPath",
+    "email": "support@trylaunchpath.com"
+  },
+  "plugins": [
+    {
+      "name": "launchpath",
+      "description": "AI agent deployment — create, train, deploy, and manage agents with 50+ MCP tools and guided workflow skills.",
+      "source": "./plugins/launchpath",
+      "category": "productivity",
+      "homepage": "https://www.trylaunchpath.com"
+    }
+  ]
+}
