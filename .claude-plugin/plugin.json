@@ -1,0 +1,19 @@
+{
+  "name": "launchpath",
+  "description": "AI agent deployment platform — create, train, deploy, and manage AI agents for businesses entirely from Claude Code. Build website widgets, WhatsApp campaigns, and API integrations.",
+  "version": "1.0.0",
+  "author": {
+    "name": "LaunchPath"
+  },
+  "homepage": "https://www.trylaunchpath.com",
+  "repository": "https://github.com/launchpath/claude-plugin",
+  "keywords": [
+    "ai-agents",
+    "chatbot",
+    "deployment",
+    "whatsapp",
+    "widget",
+    "api",
+    "mcp"
+  ]
+}
