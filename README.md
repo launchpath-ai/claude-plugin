@@ -34,6 +34,10 @@ Full access to the LaunchPath platform:
 | `/launchpath:audit-agent` | Diagnose why an agent is underperforming — checks prompt, tools, knowledge, conversations, and channels |
 | `/launchpath:agent-report` | Executive dashboard across all agents — performance, costs, deployments, and what needs attention |
 | `/launchpath:stress-test` | Run targeted tests before deploying — edge cases, tool failures, prompt injection, knowledge boundaries |
+| `/launchpath:conversation-insights` | Business intelligence from conversations — what customers ask, topic trends, demand signals, sentiment |
+| `/launchpath:whatsapp-compliance` | WhatsApp expert — writes Meta-compliant templates, validates drip timing, diagnoses rejections and failures |
+| `/launchpath:crm-connect` | Connect your CRM (HubSpot, Salesforce, etc.) so your agent reads and writes customer data in real time |
+| `/launchpath:dev-quickstart` | Generate a complete integration — Slack bot, React chat UI, voice agent, email autoresponder, or any platform |
 
 All skills are **manual-only** — they only run when you type the command. They never auto-trigger (some cost credits or perform heavy analysis).
 
@@ -51,6 +55,18 @@ All skills are **manual-only** — they only run when you type the command. They
 
 # Test before going live
 /launchpath:stress-test Booking Assistant
+
+# What are customers actually asking?
+/launchpath:conversation-insights Dental Assistant
+
+# Write WhatsApp templates that pass Meta review
+/launchpath:whatsapp-compliance "create templates"
+
+# Connect HubSpot to your agent
+/launchpath:crm-connect hubspot
+
+# Build a Slack bot powered by your agent
+/launchpath:dev-quickstart slack bot
 ```
 
 ## Requirements
