@@ -30,13 +30,13 @@ Full access to the LaunchPath platform:
 
 | Command | What it does |
 |---------|-------------|
+| `/launchpath:live-demo` | Build a branded AI agent demo from a prospect's website in under 2 minutes — deploys to widget, WhatsApp, or API |
 | `/launchpath:goal-tracker` | Track conversions across channels — which conversations booked, which leads hit your CRM, which WhatsApp contacts converted. Smart action classification so only real outcomes count |
 | `/launchpath:audit-agent` | Diagnose why an agent is underperforming — checks prompt, tools, knowledge, conversations, and channels |
 | `/launchpath:agent-report` | Executive dashboard across all agents — performance, costs, deployments, and what needs attention |
 | `/launchpath:stress-test` | Run targeted tests before deploying — edge cases, tool failures, prompt injection, knowledge boundaries |
 | `/launchpath:conversation-insights` | Business intelligence from conversations — what customers ask, topic trends, demand signals, sentiment |
 | `/launchpath:whatsapp-compliance` | WhatsApp expert — writes Meta-compliant templates, validates drip timing, diagnoses rejections and failures |
-| `/launchpath:crm-connect` | Connect your CRM (HubSpot, Salesforce, etc.) so your agent reads and writes customer data in real time |
 | `/launchpath:dev-quickstart` | Generate a complete integration — Slack bot, React chat UI, voice agent, email autoresponder, or any platform |
 
 All skills are **manual-only** — they only run when you type the command. They never auto-trigger (some cost credits or perform heavy analysis).
@@ -44,6 +44,9 @@ All skills are **manual-only** — they only run when you type the command. They
 ## Quick start
 
 ```
+# Create a branded demo for a prospect in 60 seconds
+/launchpath:live-demo https://brightsmile-dental.com
+
 # See how many people actually booked/converted
 /launchpath:goal-tracker Dental Assistant
 
@@ -61,9 +64,6 @@ All skills are **manual-only** — they only run when you type the command. They
 
 # Write WhatsApp templates that pass Meta review
 /launchpath:whatsapp-compliance "create templates"
-
-# Connect HubSpot to your agent
-/launchpath:crm-connect hubspot
 
 # Build a Slack bot powered by your agent
 /launchpath:dev-quickstart slack bot
