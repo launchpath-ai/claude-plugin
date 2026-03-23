@@ -1,6 +1,6 @@
 ---
 name: live-demo
-description: Build a personalized AI agent demo from a prospect's website. Scrapes their site, creates a branded agent, and generates a ready-to-use landing page with widget chat and WhatsApp lead capture — all from one command.
+description: Build a personalized demo landing page for a prospect. Connects an existing agent and campaign to a branded page with widget chat and WhatsApp lead capture — or creates new ones if needed.
 user-invocable: true
 disable-model-invocation: true
 argument-hint: [website URL or business description]
@@ -33,26 +33,20 @@ The user will give you one or more of:
 
 If the input is unclear, ask: "What's the prospect's website URL?" — don't ask for anything else yet.
 
-## Step 2: Check for existing resources
+## Step 2: Choose the agent
 
-Before creating anything new, ask the user:
+**Default to using an existing agent.** Call `list_agents` to show the user their agents.
 
-"Do you want me to:
-A) Create a new agent and campaign for this demo
-B) Use an existing agent/campaign — which one?"
+Ask: "Which agent do you want to use for this demo?" and list them by name.
 
-If they want to use existing resources:
-- Call `list_agents` or `list_campaigns` to find the right one
-- Call `get_agent` to read the current config
-- Skip to Step 5 (the landing page)
+- If the user picks one → call `get_agent` to read its config, then continue to Step 3
+- If the user says "create a new one" → go to Step 2b
 
-If creating new, continue to Step 3.
+### Step 2b: Create a new agent (only if requested)
 
-## Step 3: Scrape and analyze the website
+If you have a website URL, scrape it first for knowledge and brand signals:
 
-Call `discover_pages` to find all pages on the domain.
-
-Then call `scrape_website` for the **most important pages first** (parallel where possible):
+Call `discover_pages` to find all pages on the domain, then `scrape_website` for the **most important pages** (cap at 7):
 1. Homepage (always)
 2. About / About Us
 3. Services / What We Do
@@ -60,60 +54,59 @@ Then call `scrape_website` for the **most important pages first** (parallel wher
 5. FAQ / Help
 6. Contact / Book / Schedule
 
-**Cap at 7 pages** — speed matters more than completeness for a demo.
-
-While scraping, extract these signals from the content:
-
-### Business Identity
-- **Business name** — from site title, header, or about page
-- **Industry** — dental, gym, law firm, restaurant, plumbing, etc.
-- **Services** — main 3-5 offerings
-- **Tone** — professional, friendly, casual, clinical
-- **Location** — city/area if mentioned
-- **Business hours** — if on the site
-- **Phone number** — if prominent
-
-### Brand Signals
-- **Primary color** — look for meta theme-color, dominant button/header colors, or use industry defaults:
+While scraping, extract:
+- **Business name, industry, services, tone, location, hours, phone**
+- **Primary color** — from meta theme-color, buttons, or use industry defaults:
   - Dental: `#4A90D9`, Gym: `#FF6B35`, Legal: `#1B365D`, Restaurant: `#C41E3A`, Plumbing/HVAC: `#2E86AB`, Cleaning: `#27AE60`, Med spa: `#9B59B6`, Real estate: `#E74C3C`
 - **Logo URL** — from og:image, favicon, or header image
 
-### Conversation Starters
-Generate 3-4 based on actual services. These should be customer questions:
-- Dental: "Book a cleaning", "Do you accept my insurance?", "What are your hours?"
-- Gym: "See membership plans", "Book a free trial", "Class schedule"
-- Legal: "Free consultation", "Practice areas", "Your fees"
-
-## Step 4: Create the agent and campaign
-
-### Agent
-Call `create_agent` with:
+Then call `create_agent` with:
 - **Name:** `[Business Name] Assistant`
 - **Model:** `openai/gpt-4o-mini` (cheapest — this is a demo)
-- **System prompt:** Write it from the scraped content. Include:
-  - Business name, what they do, their services
-  - Tone matching their website copy
-  - Greeting message
-  - Key facts (pricing if public, specialties, location, hours)
-  - "Demo mode" instruction: when asked to book/schedule, say "In the full version, I'll be connected to your booking system to handle this automatically."
+- **System prompt:** Include business name, services, tone, greeting, key facts, and a "demo mode" instruction: when asked to book/schedule, say "In the full version, I'll be connected to your booking system to handle this automatically."
 
-Then call `generate_faqs` to auto-create Q&A pairs.
+Call `generate_faqs` to auto-create Q&A pairs.
 
-### Campaign with widget
-1. Call `create_client` with the prospect's business name and website
-2. Call `create_campaign` with `channel_type: "widget"`
-3. Call `configure_widget` with:
+## Step 3: Choose the campaign and channel
+
+**Default to using an existing campaign.** Call `list_campaigns` to see what's available.
+
+Ask: "Which campaign do you want to connect to this demo page? For example:
+- A **widget campaign** — visitors chat with the agent on the page
+- A **WhatsApp campaign** — visitors see a WhatsApp link or QR code
+- Or I can **create a new campaign** for this demo"
+
+List any existing campaigns and their channel types so the user can pick.
+
+- If the user picks an existing campaign → call `get_campaign` to read its config, then call `get_embed_code` to get the `data-channel-id` and `data-token` values. Continue to Step 4.
+- If the user wants a new campaign → go to Step 3b
+
+### Step 3b: Create a new campaign (only if requested)
+
+1. Call `list_clients` to check if the prospect's client account already exists
+2. If not, call `create_client` with the prospect's business name and website
+3. Call `create_campaign` with the chosen `channel_type` (`"widget"` or `"whatsapp"`)
+4. If widget: call `configure_widget` with:
    - `primary_color`: the brand color you found
    - `agent_avatar`: logo URL or industry emoji
    - `agent_name`: business name
    - `welcome_message`: personalized greeting
-   - `conversation_starters`: the 3-4 you generated
+   - `conversation_starters`: 3-4 customer questions based on their services (e.g., "Book a cleaning", "Do you accept my insurance?", "What are your hours?")
    - `show_branding`: `false`
    - `pre_chat_form`: `false` (no friction for demo)
-4. Call `update_campaign(status: "active")`
-5. Call `get_embed_code` — save the `data-channel-id` and `data-token` values
+5. Call `update_campaign(status: "active")`
+6. Call `get_embed_code` — save the `data-channel-id` and `data-token` values
 
-## Step 5: Generate the landing page
+## Step 4: Scrape for brand signals (if not already done)
+
+If you have a website URL and didn't scrape in Step 2b (because the user chose an existing agent), scrape the **homepage only** to extract brand signals for the landing page:
+- Business name, industry, services, tone
+- Primary color, logo URL
+- Key selling points for the landing page copy
+
+This is NOT for training the agent — it's for customizing the landing page copy and colors.
+
+## Step 5: Generate the landing page (the core of this skill)
 
 This is the core of the skill. You're creating a **customized version of the DemoTemplate**.
 
@@ -220,12 +213,14 @@ NEXT STEPS (when prospect converts):
 
 ## Important Rules
 
-- **Speed matters.** Don't ask unnecessary questions. Get the URL, scrape, build, generate the page.
+- **Use existing agents and campaigns by default.** Only create new ones if the user explicitly asks. Always call `list_agents` and `list_campaigns` first.
+- **Ask which agent and which campaign.** Don't assume — let the user pick from their existing resources.
+- **Speed matters.** Don't ask unnecessary questions beyond agent/campaign selection. Get the URL, scrape for brand signals, generate the page.
 - **Cap scraping at 7 pages.** Agency can add more knowledge later.
-- **Use gpt-4o-mini for demos.** Cheap and fast. Upgrade for production.
+- **Use gpt-4o-mini for new demo agents.** Cheap and fast. Upgrade for production.
 - **The demo agent IS the production agent.** If the prospect signs on, the agency just upgrades — no rebuilding.
 - **Don't test automatically.** `chat_with_agent` costs credits. The widget on the page IS the test.
 - **The template is a starting point.** Read it, understand it, then rewrite it for the prospect's business. Change the headline, copy, colors, FAQs, form fields — everything should feel specific to their industry.
 - **Don't store contacts.** The agency owns their prospect data and chooses where it goes.
 - **Conversation starters should be CUSTOMER questions.** "Book a cleaning" not "We offer cleanings."
-- **The system prompt should include a "demo mode" note.** When asked about booking/scheduling, the agent says it can do this in the full version. Natural upsell moment.
+- **The system prompt should include a "demo mode" note** (for new agents only). When asked about booking/scheduling, the agent says it can do this in the full version. Natural upsell moment.
