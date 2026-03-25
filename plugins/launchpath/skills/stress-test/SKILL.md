@@ -2,7 +2,7 @@
 name: stress-test
 description: Run a battery of targeted tests against an agent before deploying it. Tests edge cases, tool failures, prompt injection, and real conversation scenarios — catches problems before customers find them.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [agent name or ID]
 allowed-tools:
   - mcp__launchpath__*

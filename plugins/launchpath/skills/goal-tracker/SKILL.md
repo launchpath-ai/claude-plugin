@@ -2,7 +2,7 @@
 name: goal-tracker
 description: Track conversions across channels — which conversations booked, which leads hit your CRM, which WhatsApp contacts converted. Smart action classification so only real outcomes count.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [agent name or ID]
 allowed-tools:
   - mcp__launchpath__*

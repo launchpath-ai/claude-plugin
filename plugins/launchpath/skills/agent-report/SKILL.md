@@ -2,7 +2,7 @@
 name: agent-report
 description: Get a full overview of all your LaunchPath agents — performance, deployments, costs, and what needs attention. The executive dashboard in one command.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools:
   - mcp__launchpath__*
 context: fork

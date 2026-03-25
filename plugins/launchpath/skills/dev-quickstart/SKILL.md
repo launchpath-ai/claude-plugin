@@ -2,7 +2,7 @@
 name: dev-quickstart
 description: Generate a complete working integration for the LaunchPath API channel — Slack bot, voice agent, custom chat UI, email autoresponder, or any platform. Creates the channel and outputs ready-to-use code.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [what to build, e.g. "slack bot", "react chat", "voice agent"]
 allowed-tools:
   - mcp__launchpath__*

@@ -2,7 +2,7 @@
 name: conversation-insights
 description: Discover what your customers are actually asking, what topics come up most, where conversations go wrong, and what your agent handles well vs poorly. Business intelligence from your conversation data.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [agent name or ID]
 allowed-tools:
   - mcp__launchpath__*

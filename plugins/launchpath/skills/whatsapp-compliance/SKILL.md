@@ -2,7 +2,7 @@
 name: whatsapp-compliance
 description: WhatsApp campaign expert — writes templates that pass Meta review on the first try, validates drip sequence timing against the 24-hour window rule, diagnoses rejected templates and failed broadcasts, and translates Meta error codes into fixes.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [campaign name or "diagnose"]
 allowed-tools:
   - mcp__launchpath__*

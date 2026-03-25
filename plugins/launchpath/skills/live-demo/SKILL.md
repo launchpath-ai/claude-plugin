@@ -2,7 +2,7 @@
 name: live-demo
 description: Build a personalized demo landing page for a prospect. Connects an existing agent and campaign to a branded page with widget chat and WhatsApp lead capture — or creates new ones if needed.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [website URL or business description]
 allowed-tools:
   - mcp__launchpath__*

@@ -2,7 +2,7 @@
 name: audit-agent
 description: Diagnose why an agent is underperforming. Checks the system prompt, tools, knowledge base, conversation outcomes, and channel health — then tells you exactly what's wrong and how to fix it.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: [agent name or ID]
 allowed-tools:
   - mcp__launchpath__*
