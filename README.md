@@ -4,17 +4,11 @@ Create, train, deploy, and manage AI agents for businesses entirely from Claude 
 
 ## Installation
 
-### Option 1: Plugin marketplace (recommended)
+### From the terminal
 
-```
-/plugin marketplace add launchpath/claude-plugin
-/plugin install launchpath
-```
-
-### Option 2: Direct from GitHub
-
-```
-/plugin install https://github.com/launchpath/claude-plugin.git
+```bash
+claude plugin marketplace add launchpath-ai/claude-plugin
+claude plugin install launchpath@launchpath-ai
 ```
 
 You'll be prompted for your LaunchPath API key. Get it from [Settings → API Keys](https://www.trylaunchpath.com/dashboard/settings) in the LaunchPath dashboard.
@@ -34,29 +28,45 @@ Full access to the LaunchPath platform:
 
 ### Skills (slash commands)
 
-| Command | Description |
+| Command | What it does |
 |---------|-------------|
-| `/launchpath:deploy-agent` | End-to-end: create agent → train → deploy |
-| `/launchpath:setup-client` | Create client account and link an agent |
-| `/launchpath:agent-report` | Summary report of all agents and what needs attention |
-| `/launchpath:whatsapp-campaign` | Set up WhatsApp templates, contacts, and campaigns |
+| `/launchpath:live-demo` | Build a branded AI agent demo from a prospect's website in under 2 minutes — deploys to widget, WhatsApp, or API |
+| `/launchpath:goal-tracker` | Track conversions across channels — which conversations booked, which leads hit your CRM, which WhatsApp contacts converted. Smart action classification so only real outcomes count |
+| `/launchpath:audit-agent` | Diagnose why an agent is underperforming — checks prompt, tools, knowledge, conversations, and channels |
+| `/launchpath:agent-report` | Executive dashboard across all agents — performance, costs, deployments, and what needs attention |
+| `/launchpath:stress-test` | Run targeted tests before deploying — edge cases, tool failures, prompt injection, knowledge boundaries |
+| `/launchpath:conversation-insights` | Business intelligence from conversations — what customers ask, topic trends, demand signals, sentiment |
+| `/launchpath:whatsapp-compliance` | WhatsApp expert — writes Meta-compliant templates, validates drip timing, diagnoses rejections and failures |
+| `/launchpath:dev-quickstart` | Generate a complete integration — Slack bot, React chat UI, voice agent, email autoresponder, or any platform |
 
-Plus an internal guide that helps Claude understand how to use LaunchPath tools effectively.
+All skills are **manual-only** — they only run when you type the command. They never auto-trigger (some cost credits or perform heavy analysis).
 
 ## Quick start
 
 ```
-# Deploy an agent for a business
-/launchpath:deploy-agent https://example.com
+# Create a branded demo for a prospect in 60 seconds
+/launchpath:live-demo https://brightsmile-dental.com
 
-# Set up a new client
-/launchpath:setup-client Acme Corp
+# See how many people actually booked/converted
+/launchpath:goal-tracker Dental Assistant
 
-# Check how your agents are doing
+# Find out what's wrong with an agent
+/launchpath:audit-agent Demo Support Agent
+
+# Get the overview of everything
 /launchpath:agent-report
 
-# Launch a WhatsApp campaign
-/launchpath:whatsapp-campaign Spring promotion
+# Test before going live
+/launchpath:stress-test Booking Assistant
+
+# What are customers actually asking?
+/launchpath:conversation-insights Dental Assistant
+
+# Write WhatsApp templates that pass Meta review
+/launchpath:whatsapp-compliance "create templates"
+
+# Build a Slack bot powered by your agent
+/launchpath:dev-quickstart slack bot
 ```
 
 ## Requirements
