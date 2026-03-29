@@ -18,7 +18,9 @@
   ],
   "userConfig": {
     "LAUNCHPATH_API_KEY": {
+      "title": "LaunchPath API Key",
       "description": "Your LaunchPath API key (from trylaunchpath.com/dashboard/mcp)",
+      "type": "string",
       "sensitive": true
     }
   }
