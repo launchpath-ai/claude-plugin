@@ -2,9 +2,9 @@
   "mcpServers": {
     "launchpath": {
       "command": "npx",
-      "args": ["-y", "@launchpath-ai/mcp-server"],
+      "args": ["-y", "@launchpath-ai/mcp-server@latest"],
       "env": {
-        "LAUNCHPATH_API_KEY": "${LAUNCHPATH_API_KEY}"
+        "LAUNCHPATH_API_KEY": "${user_config.LAUNCHPATH_API_KEY}"
       }
     }
   }
