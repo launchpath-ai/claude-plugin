@@ -1,6 +1,6 @@
 {
   "name": "launchpath",
-  "description": "AI agent deployment platform — create, train, deploy, and manage AI agents for businesses entirely from Claude Code. Build website widgets, WhatsApp campaigns, and API integrations.",
+  "description": "Guided workflow skills for LaunchPath — deploy agents, set up clients, audit agents, and manage WhatsApp campaigns using slash commands. Install the MCP server separately for full tool access.",
   "version": "1.4.8",
   "author": {
     "name": "LaunchPath"
@@ -14,14 +14,6 @@
     "whatsapp",
     "widget",
     "api",
-    "mcp"
-  ],
-  "userConfig": {
-    "LAUNCHPATH_API_KEY": {
-      "title": "LaunchPath API Key",
-      "description": "Your LaunchPath API key (from trylaunchpath.com/dashboard/mcp)",
-      "type": "string",
-      "sensitive": true
-    }
-  }
+    "skills"
+  ]
 }
