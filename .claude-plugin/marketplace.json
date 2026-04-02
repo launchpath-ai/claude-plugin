@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "launchpath",
-      "description": "AI agent deployment — create, train, deploy, and manage agents with 50+ MCP tools and guided workflow skills.",
+      "description": "AI agent deployment — create, train, deploy, and manage agents with 70+ MCP tools and guided workflow skills.",
       "source": "./plugins/launchpath",
       "category": "productivity",
       "homepage": "https://www.trylaunchpath.com"
