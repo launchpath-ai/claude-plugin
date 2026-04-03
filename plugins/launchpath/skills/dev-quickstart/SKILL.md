@@ -34,44 +34,51 @@ Based on the platform, generate complete, deployable code. Every integration nee
 
 ### Core: SSE Stream Parser
 
-All integrations must parse the LaunchPath SSE response format. Here's the event stream:
+All integrations must parse the LaunchPath SSE response format. Events are `data:`-only lines (no `event:` prefix) with JSON payloads containing a `type` field:
 
 ```
-event: text-delta
 data: {"type":"text-delta","delta":"Hello"}
 
-event: text-delta
 data: {"type":"text-delta","delta":" there!"}
 
-event: tool-call
+data: {"type":"text-done"}
+
+data: {"type":"thinking","text":"Let me consider the best option..."}
+
+data: {"type":"thinking-done"}
+
 data: {"type":"tool-call","toolName":"GOOGLE_CALENDAR_CREATE_EVENT","displayName":"Book Appointment","args":{...}}
 
-event: tool-result
 data: {"type":"tool-result","toolName":"GOOGLE_CALENDAR_CREATE_EVENT","success":true,"message":"Event created"}
 
-event: rag-context
-data: {"type":"rag-context","sources":[{"name":"pricing.md","type":"webpage","similarity":0.92}]}
+data: {"type":"rag-context","sources":[{"name":"pricing.md","type":"webpage","similarity":0.92,"documentId":"abc-123"}]}
 
-event: done
-data: {"type":"done","conversationId":"abc-123"}
+data: {"type":"done","conversationId":"abc-123","assistantContent":"Hello there!"}
 
-event: error
 data: {"type":"error","message":"Rate limit exceeded"}
 ```
+
+**Event types:** `text-delta` (streaming text), `text-done` (text complete), `thinking`/`thinking-done` (model reasoning), `tool-call` (tool invocation), `tool-result` (tool outcome), `rag-context` (knowledge sources used), `done` (conversation complete — includes `conversationId` and optionally `assistantContent`), `error`.
 
 ### Core: Error Handling
 
 Every integration must handle these HTTP status codes:
+- **400** — Bad request. Missing required fields (`userMessage`, `sessionId`), invalid JSON, or message too long.
 - **401** — Invalid token. Check the bearer token.
 - **403** — Channel disabled or origin not allowed. Check allowed_origins.
-- **410** — Conversation closed. Start a new session.
+- **410** — Conversation closed. Start a new session (new `sessionId`).
 - **423** — Conversation paused or in human takeover. Show a "connected to human agent" message. Do NOT send more AI messages.
-- **429** — Rate limited. Back off and retry after the Retry-After header value.
+- **429** — Rate limited. Back off and retry after the `Retry-After` header value.
+- **503** — Service unavailable. The agent owner's account is suspended or has no active subscription.
 
 ### Core: Session Management
 
-- **Stateful mode** (recommended for most integrations): Send `sessionId` with each request. The server manages conversation history. Use a consistent ID per user/thread (e.g., Slack thread_ts, phone number, user ID).
-- **Stateless mode**: Send the full `messages` array with each request. The caller manages history. Use this when you need full control over context.
+**IMPORTANT:** `sessionId` is **required** on every request — the API returns 400 if it's missing. Generate a UUID client-side for new conversations.
+
+- **Stateful mode** (recommended for most integrations): Send `sessionId` + `userMessage` with each request. The server manages conversation history. Use a consistent ID per user/thread (e.g., Slack thread_ts, phone number, user ID).
+- **Stateless mode**: Send `sessionId` + `userMessage` + the full `messages` array with each request. The caller provides history context. Use this when you need full control over the conversation window. `sessionId` is still required even in this mode.
+
+The request body also accepts an optional `visitorInfo` object (`{ name?, email?, phone? }`) to identify the visitor for CRM and lead tracking.
 
 ---
 

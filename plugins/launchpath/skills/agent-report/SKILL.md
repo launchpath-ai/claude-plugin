@@ -15,7 +15,7 @@ You are generating an executive report across ALL of the user's LaunchPath agent
 1. `list_agents` — get all agents with their models and counts
 2. `list_campaigns` — get all campaigns to see which agents are deployed and where
 3. `list_clients` — get all client accounts
-4. For each campaign that has active channels: `get_channel_health(campaign_id)` — check health status
+4. For up to 15 campaigns that have active channels: `get_channel_health(campaign_id)` — check health status. If there are more than 15, prioritize active campaigns and note that remaining campaigns were not checked.
 5. For the top 5 most active agents (by channel count or recent activity): `list_conversations(campaign_id, limit: 10)` — sample recent conversations
 6. For those sampled conversations (up to 5 per agent): `get_conversation(conversation_id)` — read transcripts for outcome analysis
 
@@ -30,9 +30,10 @@ Total Agents:      [N]
   Undeployed:      [N] (no campaigns or all paused)
 
 Total Campaigns:   [N]
-  Widget:          [N]
+  Widget:          [N]  (channel type is available in campaign data from list_campaigns)
   WhatsApp:        [N]
-  API:             [N]
+
+> Note: API channels are created directly on agents (via `create_api_channel`), not as campaigns. To count API channels, call `list_channels(agent_id)` for agents that may have API integrations. If this is too many calls, note that API channel counts are not included.
 
 Total Clients:     [N]
 ```
@@ -46,17 +47,19 @@ Total Clients:     [N]
 
 For each agent:
 - **Model**: Note if an expensive model is being used where a cheaper one might suffice
-- **Knowledge**: Doc count. Flag if 0 docs + knowledge_enabled
+- **Knowledge**: Doc count (from `list_agents` `_counts.knowledge_docs`). Flag if 0 docs + knowledge_enabled (note: `knowledge_enabled` requires a `get_agent` call — only check for deployed agents with 0 docs)
 - **Tools**: Count. Flag if tools exist but might not be referenced in prompt
 - **Channels**: List channel types and count. Flag unhealthy channels
-- **Outcome Rate**: From conversation sampling — what % of conversations show tool success or natural completion? If no conversations exist, show "No data"
+- **Outcome Rate**: (conversations with at least one successful tool call + conversations that closed naturally after 4+ messages) / total conversations sampled. If the agent has no tools, fall back to engagement rate (conversations with 3+ messages / total). If no conversations exist, show "No data"
 
 ### Cost Analysis
 For each agent, note the model and estimate relative cost:
-- `gpt-4o-mini` = lowest cost (0.07x multiplier)
-- `gpt-4o` = moderate (0.5x)
-- `claude-sonnet` = high (1x)
-- `claude-opus` = highest
+- `openai/gpt-4o-mini` = lowest cost
+- `openai/gpt-4o` = moderate
+- `anthropic/claude-sonnet-*` = high
+- `anthropic/claude-opus-*` = highest
+
+Match the `model` field from `get_agent` or `list_agents` — it uses `provider/model-id` format.
 
 Flag mismatches: "Agent X uses claude-sonnet but handles simple FAQ questions. Switching to gpt-4o-mini would reduce costs significantly with minimal quality impact."
 
@@ -125,7 +128,7 @@ Provide 3-5 concrete recommendations, ranked by impact:
 ## Gotchas
 
 - Don't try to read conversations for ALL agents — sample the most active ones. The report should complete in under 2 minutes, not 10.
-- `get_agent_analytics` may not return useful stats — derive what you can from conversation sampling instead.
+- `get_agent_analytics` returns **delete-impact counts** (campaigns, channels, conversations, subagents, client assignments that would be affected by deletion), NOT performance metrics. Do not use it for analytics — derive all performance data from conversation sampling via `list_conversations` + `get_conversation`.
 - If there are no deployed agents, the report is simple: "No agents are live. Here's what to do next."
 - Some agents are intentionally drafts or experiments — don't flag every undeployed agent as a problem. Note them but focus attention on deployed agents with issues.
-- Credit cost per conversation is in the `total_credits` field on conversations — use it if available.
+- Per-conversation credit cost (`total_credits`) may not be available in the MCP API response. If the field is missing from conversation data, estimate costs from model pricing tiers instead of per-conversation data.

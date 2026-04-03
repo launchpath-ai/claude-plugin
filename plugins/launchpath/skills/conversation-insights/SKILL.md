@@ -19,13 +19,17 @@ You are a business intelligence analyst mining conversation data. Your job is NO
 
 ## Step 2: Gather conversations
 
-Find the agent's live campaigns via `list_campaigns`, then pull conversations:
+Call `list_campaigns()` and filter for campaigns where `agent_id` matches the target agent (`list_campaigns` has no `agent_id` filter — you must filter the results client-side).
+
+> **If no campaigns are found for this agent:** The agent has not been deployed to any channel yet, so there are no live customer conversations to analyze. Tell the user: "This agent has no deployed campaigns — there are no customer conversations to analyze yet. Deploy the agent to a widget or WhatsApp campaign first, then run this analysis after some conversations have occurred." Stop here.
+
+Then pull conversations:
 - `list_conversations(campaign_id, limit: 50)` — get the most recent conversations
 - Read 15-25 of these via `get_conversation` — prioritize variety:
   - 5 recent conversations (newest)
-  - 5 with the most messages (longest engagement)
+  - 5 with the most messages (longest engagement) — sort by `message_count` client-side; the API returns conversations ordered by recency only
   - 5 with the fewest messages (bounces/quick resolutions)
-  - Any with CSAT ratings (if metadata.csat_rating exists) — especially low-rated ones
+  - Any with CSAT ratings (if `metadata.csat_rating` exists) — especially low-rated ones. Note: CSAT ratings are only present if the widget's `csat_survey` setting is enabled AND the visitor submitted a rating. If no conversations have CSAT data, skip CSAT-based prioritization and note this in the report.
 
 **Sampling strategy:** Don't read all 50. Read enough to find patterns, not every data point. If patterns emerge clearly after 15, that's enough.
 
@@ -95,10 +99,19 @@ Based on the patterns, surface business intelligence:
 "12 people asked about teeth whitening this month. If you don't offer it yet, there's demand. If you do, add it to the knowledge base — the agent can't answer these questions."
 
 ### Peak conversation times
-Note when conversations happen most (from timestamps). "80% of conversations happen between 6pm-10pm — your office is closed. The agent is handling evening demand you'd otherwise miss."
+Note when conversations happen most (use `created_at` timestamps from the conversation list — no need to read each conversation for this). Group by hour of day. Convert from UTC to the business's likely timezone — infer from the agent's language setting, business address in the knowledge base, or phone number area code. If timezone is ambiguous, report in UTC and note the caveat.
+
+"80% of conversations happen between 6pm-10pm — your office is closed. The agent is handling evening demand you'd otherwise miss."
 
 ### Repeat visitors
-If metadata shows the same visitor_email or whatsapp_phone across multiple conversations: "3 customers came back for a second conversation — they weren't satisfied the first time. Here's what they asked about both times."
+Repeat visitor detection depends on the channel type and configuration:
+- **WhatsApp conversations**: Match by `whatsapp_phone` or `session_id` in conversation metadata — always available.
+- **Widget with pre-chat form**: Match by `visitor_email` or `visitor_phone` in metadata — only available if the pre-chat form is enabled and collects these fields.
+- **Widget without pre-chat form**: No reliable visitor identity — repeat visits cannot be detected.
+
+If repeat visitors are found: "3 customers came back for a second conversation — they weren't satisfied the first time. Here's what they asked about both times."
+
+> **Limitation:** If no visitor identity data is available (widget without pre-chat form), note that repeat visitor analysis requires pre-chat form configuration and skip this section.
 
 ### Competitive mentions
 If customers mention competitors by name: "2 customers mentioned [Competitor] — they're comparison shopping. Consider adding competitive FAQ entries."

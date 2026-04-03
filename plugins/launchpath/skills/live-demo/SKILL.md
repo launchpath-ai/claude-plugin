@@ -44,9 +44,16 @@ Ask: "Which agent do you want to use for this demo?" and list them by name.
 
 ### Step 2b: Create a new agent (only if requested)
 
-If you have a website URL, scrape it first for knowledge and brand signals:
+First, create the agent so you have an `agent_id` for knowledge tools:
 
-Call `discover_pages` to find all pages on the domain, then `scrape_website` for the **most important pages** (cap at 7):
+Call `create_agent` with:
+- **Name:** `[Business Name] Assistant`
+- **Model:** `openai/gpt-4o-mini` (cheapest — this is a demo)
+- **System prompt:** A brief placeholder — you'll refine it after scraping
+
+Then, if you have a website URL, scrape it for knowledge and brand signals:
+
+Call `discover_pages(agent_id, url)` to find all pages on the domain, then `scrape_website_batch(agent_id, urls)` or `scrape_website(agent_id, url)` for the **most important pages** (cap at 7):
 1. Homepage (always)
 2. About / About Us
 3. Services / What We Do
@@ -60,12 +67,9 @@ While scraping, extract:
   - Dental: `#4A90D9`, Gym: `#FF6B35`, Legal: `#1B365D`, Restaurant: `#C41E3A`, Plumbing/HVAC: `#2E86AB`, Cleaning: `#27AE60`, Med spa: `#9B59B6`, Real estate: `#E74C3C`
 - **Logo URL** — from og:image, favicon, or header image
 
-Then call `create_agent` with:
-- **Name:** `[Business Name] Assistant`
-- **Model:** `openai/gpt-4o-mini` (cheapest — this is a demo)
-- **System prompt:** Include business name, services, tone, greeting, key facts, and a "demo mode" instruction: when asked to book/schedule, say "In the full version, I'll be connected to your booking system to handle this automatically."
+Now refine the agent with scraped knowledge. Call `update_agent` to set the full system prompt — include business name, services, tone, greeting, key facts, and a "demo mode" instruction: when asked to book/schedule, say "In the full version, I'll be connected to your booking system to handle this automatically."
 
-Call `generate_faqs` to auto-create Q&A pairs.
+Generate 5-10 FAQ pairs from the scraped content (services, pricing, hours, location, etc.) and call `add_faq_batch(agent_id, faqs)` to add them all at once.
 
 ## Step 3: Choose the campaign and channel
 
@@ -78,7 +82,7 @@ Ask: "Which campaign do you want to connect to this demo page? For example:
 
 List any existing campaigns and their channel types so the user can pick.
 
-- If the user picks an existing campaign → call `get_campaign` to read its config, then call `get_embed_code` to get the `data-channel-id` and `data-token` values. Continue to Step 4.
+- If the user picks an existing campaign → call `get_campaign` to read its config, then call `get_embed_code` to get the embed snippet containing the `data-channel` value. Continue to Step 4.
 - If the user wants a new campaign → go to Step 3b
 
 ### Step 3b: Create a new campaign (only if requested)
@@ -91,15 +95,15 @@ List any existing campaigns and their channel types so the user can pick.
    - `agent_avatar`: logo URL or industry emoji
    - `agent_name`: business name
    - `welcome_message`: personalized greeting
-   - `conversation_starters`: 3-4 customer questions based on their services (e.g., "Book a cleaning", "Do you accept my insurance?", "What are your hours?")
+   - `conversation_starters`: 3-4 customer questions based on their services, max 4 (e.g., "Book a cleaning", "Do you accept my insurance?", "What are your hours?")
    - `show_branding`: `false`
-   - `pre_chat_form`: `false` (no friction for demo)
-5. Call `update_campaign(status: "active")`
-6. Call `get_embed_code` — save the `data-channel-id` and `data-token` values
+   - `pre_chat_form`: `{ enabled: false, fields: [] }` (no friction for demo)
+5. Call `update_campaign(campaign_id, status: "active")`
+6. Call `get_embed_code(campaign_id)` — save the `data-channel` value from the embed snippet
 
 ## Step 4: Scrape for brand signals (if not already done)
 
-If you have a website URL and didn't scrape in Step 2b (because the user chose an existing agent), scrape the **homepage only** to extract brand signals for the landing page:
+If you have a website URL and didn't scrape in Step 2b (because the user chose an existing agent), scrape the **homepage only** using `scrape_website(agent_id, url)` to extract brand signals for the landing page (note: this adds the page to the existing agent's knowledge base):
 - Business name, industry, services, tone
 - Primary color, logo URL
 - Key selling points for the landing page copy
@@ -136,8 +140,7 @@ Add the widget script just before the closing `</div>` of the component:
 {/* LaunchPath Chat Widget */}
 <script
   src={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.trylaunchpath.com'}/widget.js`}
-  data-channel-id="[CHANNEL_ID from get_embed_code]"
-  data-token="[TOKEN from get_embed_code]"
+  data-channel="[CHANNEL_ID from get_embed_code]"
   async
 />
 ```
@@ -148,8 +151,7 @@ Or if Next.js SSR causes issues with the script tag, use a `useEffect`:
 useEffect(() => {
   const script = document.createElement('script');
   script.src = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.trylaunchpath.com'}/widget.js`;
-  script.dataset.channelId = '[CHANNEL_ID]';
-  script.dataset.token = '[TOKEN]';
+  script.dataset.channel = '[CHANNEL_ID]';
   script.async = true;
   document.body.appendChild(script);
   return () => { document.body.removeChild(script); };

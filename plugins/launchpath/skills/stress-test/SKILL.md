@@ -103,11 +103,16 @@ For each test scenario, call `chat_with_agent(agent_id, message)`.
 
 Use a NEW conversation for each scenario (don't pass conversation_id) so tests are independent. Exception: multi-turn tests where you deliberately continue a conversation.
 
+> **Response format:** `chat_with_agent` returns a single text block. The agent's reply text comes first, optionally followed by a `**Tools used:**` section listing each tool call with a checkmark (success) or X (failure) and a status message, then a `**conversation_id:**` line for multi-turn follow-up. Parse accordingly — the "response" for evaluation is everything before the `**Tools used:**` section.
+
 After each response, evaluate:
 
 - **Pass**: Agent responded correctly, stayed in character, used tools appropriately
 - **Partial**: Agent mostly correct but with minor issues (slightly off-tone, unnecessary verbosity, etc.)
 - **Fail**: Agent gave wrong info, hallucinated, failed to use a tool, broke character, or didn't handle the edge case
+- **Error**: `chat_with_agent` returned an error (timeout, rate limit, credit exhaustion, API failure). Mark as **INCONCLUSIVE** — the test didn't run, not that the agent failed. Note the error in the results.
+
+**If a test errors out:** Continue with remaining tests — don't abort the entire battery. If multiple tests error consecutively (3+), stop and tell the user there's a platform issue (likely rate limiting or credit exhaustion). Present whatever results you have as partial.
 
 ## Step 5: Present test results
 

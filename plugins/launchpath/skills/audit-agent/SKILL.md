@@ -18,13 +18,13 @@ You are a diagnostic expert auditing a LaunchPath agent. Your job is to find eve
 
 ## Step 2: Gather all data
 
-Call these in sequence (each depends on prior results):
+Call these — steps 1-4 are independent (all take `agent_id`) and can run in parallel. Steps 5+ depend on earlier results:
 
 1. `get_agent(agent_id)` — read the full config: system prompt, model, language, knowledge_enabled
 2. `list_agent_tools(agent_id)` — get all configured tools
 3. `list_knowledge(agent_id)` — get all knowledge documents with processing status
 4. `list_channels(agent_id)` — get all deployed channels
-5. `list_campaigns` — find campaigns linked to this agent
+5. `list_campaigns` — find campaigns linked to this agent (note: `list_campaigns` has no `agent_id` filter — filter the results client-side by matching `agent_id`)
 6. For each campaign: `get_channel_health(campaign_id)` — check channel status
 7. `list_conversations(campaign_id)` for each campaign — get recent conversations (limit 20)
 8. For the 10 most recent conversations: `get_conversation(conversation_id)` — read full transcripts

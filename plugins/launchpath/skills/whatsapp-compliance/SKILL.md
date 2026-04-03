@@ -27,6 +27,7 @@ Determine which mode from the user's input, then follow the relevant section.
 ### Step 1: Understand the campaign
 
 - `list_campaigns` to find the WhatsApp campaign (or ask which one)
+- Call `check_wa_readiness(campaign_id)` to verify the campaign is ready (credentials configured, campaign active). If any checks fail, tell the user what needs to be fixed before proceeding.
 - Ask the user what messages they want to send (welcome, follow-up, promotion, reminder, etc.)
 
 ### Step 2: Write the template
@@ -53,17 +54,21 @@ Apply these Meta compliance rules — violations cause automatic rejection:
 - URL shorteners (bit.ly, tinyurl) → always rejected. Use full URLs.
 - More than 1 phone number or URL per template → often rejected
 - Excessive emojis (3+ in a row) → spam signal
+- Duplicate template body/footer text → auto-rejected (except authentication templates)
+- Spelling and grammar errors → can be flagged as untrustworthy
 
 **Variable format:**
-- Use `{{1}}`, `{{2}}`, `{{3}}` — numbered sequentially starting from 1
+- **Positional (standard):** Use `{{1}}`, `{{2}}`, `{{3}}` — numbered sequentially starting from 1
+- **Named (modern):** Use `{{first_name}}`, `{{appointment_date}}` — lowercase with underscores. Named params can appear in any order.
 - Each variable MUST have a sample value in the template submission
 - Don't use variables for the ENTIRE message body — Meta requires meaningful static text around them
+- Don't place variables at the very beginning or end of the message body (can trigger auto-rejection)
 - Example: "Hi {{1}}, your appointment is on {{2}} at {{3}}" ✅
 - Example: "{{1}}" ❌ (entire body is a variable)
 
 **Best practices for approval:**
 - Keep it short (under 160 chars if possible)
-- UTILITY templates approve faster than MARKETING
+- UTILITY templates approve faster than MARKETING. Note: since April 2025, if you submit a UTILITY template that Meta determines should be MARKETING, it's auto-approved as MARKETING (not rejected). But repeated miscategorization can result in a 7-day creation ban.
 - Include your business name in the text
 - For MARKETING: include an opt-out instruction ("Reply STOP to unsubscribe")
 - Header (optional): TEXT, IMAGE, VIDEO, or DOCUMENT — not required but adds context
@@ -71,11 +76,11 @@ Apply these Meta compliance rules — violations cause automatic rejection:
 
 ### Step 3: Create the template
 
-Call `create_wa_template` with the compliant template. Tell the user:
+Call `create_wa_template(campaign_id, name, category, language, body)` with the compliant template. The `language` parameter is required — use `"en_US"` for English or the appropriate BCP-47 locale code (e.g., `"es"`, `"pt_BR"`). Tell the user:
 - "Template submitted. Meta reviews these in 1-24 hours."
-- "I'll check approval status — run `list_wa_templates` later or ask me to check."
+- "I'll check approval status — run `list_wa_templates(campaign_id)` later or ask me to check."
 
-Call `list_wa_templates` to show current status.
+Call `list_wa_templates(campaign_id)` to show current status.
 
 ---
 
@@ -112,7 +117,7 @@ Step 5: Text follow-up    → delay 78h       ✅ Within 6h of step 4's template
 ### Building the sequence
 
 Once timing is validated:
-1. Verify ALL referenced templates are approved: `list_wa_templates`
+1. Verify ALL referenced templates are approved: `list_wa_templates(campaign_id)`
 2. If any are PENDING or REJECTED, warn the user — the sequence will fail at those steps
 3. Call `create_wa_sequence` with the validated steps
 4. Suggest `stop_on_reply: true` for sales sequences (customer engaged = stop selling)
@@ -124,7 +129,7 @@ Once timing is validated:
 - Second touch: 48-72 hours
 - Don't send more than 1 message per day to the same contact
 - Respect timezone — if your contacts are global, consider scheduling for business hours
-- Meta rate limits: new WhatsApp Business accounts start with low sending limits (250/day). Exceeding them causes silent failures.
+- Meta rate limits: new WhatsApp Business accounts start at Tier 0 (250 messages/day). Tiers upgrade every 6 hours (not 24h) if you maintain high quality and use at least half your limit for 7 consecutive days. Tiers: 250 → 1,000 → 10,000 → 100,000 → Unlimited. Since October 2025, limits are **portfolio-based** (shared across all phone numbers under one Meta Business Portfolio) — new numbers added to an existing portfolio inherit the highest tier immediately.
 
 ---
 
@@ -132,8 +137,8 @@ Once timing is validated:
 
 ### Template rejections
 
-1. `list_wa_templates(status: "REJECTED")` — find rejected templates
-2. If stale data: `sync_wa_templates` to pull fresh statuses from Meta
+1. `list_wa_templates(campaign_id, status: "REJECTED")` — find rejected templates
+2. If stale data: `sync_wa_templates(campaign_id)` to pull fresh statuses from Meta
 3. For each rejection, diagnose the likely cause:
 
 Common rejection reasons and fixes:
@@ -147,27 +152,29 @@ Suggest a rewritten template that fixes the issue and offer to create it.
 
 ### Failed broadcasts
 
-1. `list_send_jobs` — find the broadcast
-2. `get_send_job_messages(job_id, status: "failed")` — get per-contact failure details
+1. `list_send_jobs(campaign_id)` — find the broadcast
+2. `get_send_job_messages(campaign_id, job_id, status: "failed")` — get per-contact failure details
 3. Categorize errors:
 
 | Meta Error Code | Meaning | Fix |
 |-----------------|---------|-----|
-| 131026 | Recipient not on WhatsApp | Remove from contact list |
+| 131026 | Message undeliverable — recipient not on WhatsApp, hasn't accepted ToS, or Meta chose not to deliver (especially for marketing based on engagement signals) | Remove inactive contacts; for marketing messages, improve content quality |
+| 131031 | Business account locked | Critical — stop all sending immediately. Appeal via Meta Business Support Home |
 | 131047 | 24-hour window expired | Use a template message instead of text |
-| 131048 | Spam rate limit | Slow down sending, wait 24h |
-| 131049 | Message failed to send | Retry once, then investigate |
+| 131048 | Spam rate limit — users blocking/reporting your messages | Slow down sending, review content quality, wait 24h |
+| 131049 | Meta chose not to deliver this message | Do NOT retry — this is a deliberate decision. Investigate content quality and recipient engagement |
 | 131051 | Unsupported message type | Check template format |
-| 131056 | Too many messages to same number | Rate limit — wait |
-| 130429 | Rate limit exceeded | Daily limit hit — wait until tomorrow |
-| 368 | Temporarily blocked for policy violations | Stop sending, review content, wait 24-48h |
+| 131053 | Media download/upload failure | Check media URL accessibility and file size limits |
+| 131056 | Too many messages to same number (pair rate limit) | Rate limit — wait before sending to this number again |
+| 130429 | Rate limit exceeded (Cloud API throughput) | Daily limit hit — wait until tomorrow |
+| 368 | Temporarily blocked for policy violations | Stop sending, review content, wait 24-48h. Can result in 1-30 day blocks or indefinite lock requiring appeal |
 
 4. Summarize: "23 messages sent, 18 delivered, 3 failed (2 not on WhatsApp, 1 rate limited)"
 5. Suggest fixes for each category
 
 ### Failed drip enrollments
 
-1. `get_failed_enrollments(sequence_id)` — get categorized failures
+1. `get_failed_enrollments(campaign_id, sequence_id)` — get categorized failures
 2. Common causes:
    - Contact opted out → respect it, remove from sequence
    - Template not approved → wait for approval or create a new template

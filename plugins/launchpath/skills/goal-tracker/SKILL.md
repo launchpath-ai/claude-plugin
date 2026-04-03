@@ -24,6 +24,8 @@ Then call `get_agent` to read the system prompt and understand what this agent i
 
 Call `list_agent_tools` to get all tools attached to this agent.
 
+> **If the agent has no tools (0 results):** This agent is a pure FAQ/support agent with no conversion actions. Skip Steps 2-5 (tool classification, conversation analysis for tool calls). Instead, go directly to a simplified analysis: pull recent conversations via `list_conversations(campaign_id, limit: 20)`, read 10 of them, and classify by outcome signals — conversations that closed naturally after 4+ messages count as "resolved," short conversations or abandoned ones count as "bounced." Present a simplified engagement funnel instead of a conversion funnel. Skip Steps 7-8 (WhatsApp/CRM cross-reference) unless specifically requested.
+
 For each tool, classify it as a **conversion action** or an **intermediate action**:
 
 ### Composio tools
@@ -87,13 +89,13 @@ Wait for the user to confirm or adjust before proceeding. This is critical — i
 
 ## Step 3: Pull conversation data
 
-Find the agent's live campaigns via `list_campaigns`, then pull conversations:
+Call `list_campaigns()` and filter for campaigns where `agent_id` matches the target agent (`list_campaigns` has no `agent_id` filter — you must filter client-side). Then pull conversations:
 - Use `list_conversations(campaign_id)` for REAL customer conversations
 - Use `list_conversations(agent_id)` only for test conversations — warn the user if that's all there is
 
-Pull the last 50 conversations (or fewer if less exist). For EACH, call `get_conversation` to read the full transcript.
+> **Warning:** `get_conversation` only works with campaign conversation IDs (from `channel_conversations` table). Test conversation IDs from `list_conversations(agent_id)` are stored in a different table and will return 404 with `get_conversation`. If only test conversations exist, inform the user that full transcript analysis requires live campaign conversations.
 
-**Be smart about batching** — start with 20 and expand if patterns aren't clear yet.
+**Batching strategy:** Start with `list_conversations(campaign_id, limit: 20)`. Call `get_conversation` for each to read the full transcript. If conversion patterns are clear after 20, stop. If not, fetch another batch. Never read all 50 blindly — each `get_conversation` is a separate API round-trip.
 
 ## Step 4: Classify every conversation
 
@@ -196,7 +198,7 @@ If many contacts have "No conversation yet", suggest: "Consider sending a broadc
 
 **Only do this step if the agent has CRM tools (HubSpot, Salesforce, Pipedrive, Zoho).**
 
-Identify CRM tools from `list_agent_tools` — look for `config.toolkit` matching: `hubspot`, `salesforce`, `pipedrive`, `zoho`, `zohocrm`.
+Identify CRM tools from `list_agent_tools` — look for tools with `tool_type: "composio"` and `display_name` containing CRM names (e.g., "HubSpot", "Salesforce", "Pipedrive", "Zoho"). The `config.toolkit` field may also be available but can be masked in API responses — fall back to `display_name` matching if needed.
 
 From the conversations you already analyzed, extract every CRM tool call:
 
@@ -219,7 +221,7 @@ WhatsApp → [CRM Name] Pipeline:
 
   Recommendation: 23 contacts conversed but were never added to your CRM.
   Check if the agent's prompt instructs it to create contacts — if not, update
-  the prompt with CRM instructions (use /launchpath:crm-connect to set this up).
+  the prompt with CRM instructions (e.g., "After qualifying a lead, create a contact in HubSpot with their name, email, and phone number"). Use `update_agent` to modify the prompt and `add_agent_tool` to add the CRM action if missing.
 ```
 
 ## Step 9: Present findings
